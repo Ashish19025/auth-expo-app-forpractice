@@ -38,7 +38,6 @@
       ],
       "@clerk/expo",
       "expo-secure-store",
-      "@clerk/expo",
       "expo-web-browser"
     ],
     "experiments": {

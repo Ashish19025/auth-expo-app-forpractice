@@ -3,8 +3,8 @@ import { Platform, Pressable, StyleSheet, Text } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as AuthSession from 'expo-auth-session';
 import { useSSO } from '@clerk/expo';
+import { useRouter } from 'expo-router';
 
-WebBrowser.maybeCompleteAuthSession();
 
 export const useWarmUpBrowser = () => {
   React.useEffect(() => {
@@ -26,41 +26,64 @@ type SignInWithProps = {
     | 'oauth_apple';
 };
 
-export default function SignInWith({
-  strategy,
-}: SignInWithProps) {
+export default function SignInWith({ strategy }: SignInWithProps) {
   useWarmUpBrowser();
 
   const { startSSOFlow } = useSSO();
+  const router = useRouter();
 
   const onPress = async () => {
     try {
-      const redirectUrl =
-        AuthSession.makeRedirectUri({
-          scheme: 'authexpoappforpractice',
-          path: 'continue',
-        });
-
-      const result = await startSSOFlow({
-        strategy,
-        redirectUrl,
+      const redirectUrl = AuthSession.makeRedirectUri({
+        scheme: 'authexpoappforpractice',
+        path: 'continue',
       });
 
-      console.log('SSO Result:', result);
+      console.log('Starting SSO flow with redirect URL:', redirectUrl);
+      console.log("BEFORE SSO");
+      // 1. Await the flow and destructure the response
+      const result = await startSSOFlow({
+       strategy,
+       redirectUrl,
+      });
+      console.log(result);
+      console.log("AFTER SSO");
+      console.log(
+     'SSO RESULT:',
+      JSON.stringify(result, null, 2)
+      );
 
-      // We'll inspect exact Clerk v3 response
-      // before activating session
+     const {
+     createdSessionId,
+     setActive,
+     signIn,
+     signUp,
+     } = result;
 
+      // 2. If successful, activate the session and route to your protected screen
+      if (createdSessionId && setActive) {
+      await setActive({
+      session: createdSessionId,
+      navigate: async ({ session }) => {
+      if (session?.currentTask) {
+        console.log(session.currentTask);
+        return;
+      }
+      console.log('SESSION ACTIVATED');
+      router.replace('/');
+     },
+     });
+} else {
+        // Handle edge cases like required MFA or incomplete signups
+        console.log('Flow incomplete. Missing session ID.', { signIn, signUp });
+      }
     } catch (error) {
-      console.log('OAuth Error:', error);
+      console.error('OAuth Error:', error);
     }
   };
 
   return (
-    <Pressable
-      style={styles.button}
-      onPress={onPress}
-    >
+    <Pressable style={styles.button} onPress={onPress}>
       <Text style={styles.text}>
         {strategy.replace('oauth_', '')}
       </Text>
@@ -74,9 +97,9 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
   },
-
   text: {
     color: 'white',
     fontWeight: '600',
+    textTransform: 'capitalize', // Added to cleanly format "google" to "Google"
   },
 });

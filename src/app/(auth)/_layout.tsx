@@ -1,5 +1,4 @@
 import { Stack,Redirect} from "expo-router";
-import {tokenCache} from "@clerk/expo/token-cache";
 import { useAuth } from "@clerk/expo";
 import { View, ActivityIndicator } from "react-native";
 
@@ -19,6 +18,13 @@ export default function AuthLayout() {
   if (isSignedIn) {
     return <Redirect href={'/'} />;
   }
+
+  
+
+  console.log({
+  isLoaded,
+  isSignedIn,
+});
 
   return (
     <Stack>

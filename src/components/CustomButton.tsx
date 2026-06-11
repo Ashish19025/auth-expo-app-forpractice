@@ -4,7 +4,7 @@ type CustomButtonProps = { text:string;} & PressableProps;
 
 export default function CustomButton({ text, ...props}: CustomButtonProps) {
     return (
-        <Pressable {...props} style={[styles.button]}>
+        <Pressable {...props} style={[styles.button]} >
             <Text style={styles.buttonText}>{text}</Text>
         </Pressable>
     );
