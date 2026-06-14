@@ -6,7 +6,10 @@ const User = require("../models/User");
 
 const auth = require("../middleware/auth");
 
-router.post("/sync", auth, async (req, res) => {
+router.post("/sync", async (req, res) => {
+  console.log("================================");
+  console.log("SYNC REQUEST RECEIVED");
+  console.log(req.body);
   try {
     const {
       clerkId,
@@ -27,6 +30,8 @@ router.post("/sync", auth, async (req, res) => {
         lastName,
       });
     }
+    console.log("User found:", user);
+
 
     user.lastLogin = new Date();
 
